@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Operations Dashboard</h1>
+        <p class="page-subtitle">System-wide overview &mdash; {{ 'today' }}</p>
+    </div>
+    <div class="btn-group">
+        <a href="{{ url_for('tickets.create_ticket') }}" class="btn btn-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New Ticket
+        </a>
+        <a href="{{ url_for('assets.create_asset') }}" class="btn btn-outline">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New Asset
+        </a>
+    </div>
+</div>
+
+{# ── Stat Cards ── #}
+<div class="stats-grid">
+    <div class="stat-card warning">
+        <div class="stat-value">{{ stats.open_tickets }}</div>
+        <div class="stat-label">Open Tickets</div>
+    </div>
+    <div class="stat-card danger">
+        <div class="stat-value">{{ stats.critical_tickets }}</div>
+        <div class="stat-label">Critical Open</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.in_progress }}</div>
+        <div class="stat-label">In Progress</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total_assets }}</div>
+        <div class="stat-label">Total Assets</div>
+    </div>
+    <div class="stat-card success">
+        <div class="stat-value">{{ stats.assets_available }}</div>
+        <div class="stat-label">Assets Available</div>
+    </div>
+    <div class="stat-card info">
+        <div class="stat-value">{{ stats.active_users }}</div>
+        <div class="stat-label">Active Users</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.active_rentals }}</div>
+        <div class="stat-label">Active Rentals</div>
+    </div>
+    {% if stats.overdue_rentals > 0 %}
+    <div class="stat-card danger">
+        <div class="stat-value">{{ stats.overdue_rentals }}</div>
+        <div class="stat-label">Overdue Rentals</div>
+    </div>
+    {% endif %}
+</div>
+
+{# ── Main Grid ── #}
+<div class="dashboard-grid">
+
+    {# Recent Tickets #}
+    <div class="card">
+        <div class="card-header">
+            Recent Tickets
+            <a href="{{ url_for('tickets.list_tickets') }}" class="btn btn-ghost btn-sm">View all →</a>
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Summary</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Raised</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for t in recent_tickets %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('tickets.view_ticket', ticket_id=t.id) }}">#{{ t.id }}</a>
+                    </td>
+                    <td>
+                        <span class="priority-dot dot-{{ t.priority|lower }}"></span>
+                        <span class="truncate" style="max-width:200px;display:inline-block;vertical-align:middle;" title="{{ t.title }}">{{ t.title }}</span>
+                    </td>
+                    <td>
+                        <span class="badge badge-{{ t.priority|lower }}">{{ t.priority }}</span>
+                    </td>
+                    <td>
+                        <span class="badge badge-{{ t.status|lower|replace(' ','') }}">{{ t.status }}</span>
+                    </td>
+                    <td class="text-muted" style="font-size:.8rem;white-space:nowrap;">
+                        {{ t.created_at.strftime('%d %b') }}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5">
+                        <div class="empty-state" style="padding:1.5rem;">
+                            <p>No tickets yet</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {# Active Rentals #}
+    <div class="card">
+        <div class="card-header">
+            Active Rentals
+            <a href="{{ url_for('rentals.admin_rentals') }}" class="btn btn-ghost btn-sm">Manage →</a>
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Device</th>
+                        <th>Borrowed By</th>
+                        <th>Return By</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for r in active_rentals %}
+                <tr>
+                    <td><strong>{{ r.item.name }}</strong></td>
+                    <td style="font-size:.85rem;">{{ r.borrower.full_name }}</td>
+                    <td style="font-size:.85rem;white-space:nowrap;{% if r.status == 'Overdue' %}color:var(--danger);font-weight:600;{% else %}color:var(--text-muted);{% endif %}">
+                        {{ r.return_by.strftime('%d %b %Y') }}
+                    </td>
+                    <td>
+                        {% if r.status == 'Overdue' %}
+                        <span class="badge badge-critical">Overdue</span>
+                        {% else %}
+                        <span class="badge badge-inprogress">Active</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4">
+                        <div class="empty-state" style="padding:1.5rem;">
+                            <p>No active rentals</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {# Recent Audit Events #}
+    <div class="card">
+        <div class="card-header">
+            Recent Audit Events
+            <a href="{{ url_for('admin.audit_log') }}" class="btn btn-ghost btn-sm">Full log →</a>
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Event</th>
+                        <th>User</th>
+                        <th>IP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for log in recent_logs %}
+                <tr>
+                    <td style="font-size:.8rem;white-space:nowrap;color:var(--text-muted);">
+                        {{ log.timestamp.strftime('%d %b %H:%M') }}
+                    </td>
+                    <td>
+                        <span class="ev-{{ log.event_type }}" style="font-size:.8rem;">{{ log.event_type }}</span>
+                    </td>
+                    <td style="font-size:.8rem;font-weight:500;">
+                        {{ log.user.username if log.user else '—' }}
+                    </td>
+                    <td style="font-size:.75rem;color:var(--text-muted);font-family:monospace;">
+                        {{ log.ip_address or '—' }}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4">
+                        <div class="empty-state" style="padding:1.5rem;"><p>No events yet</p></div>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

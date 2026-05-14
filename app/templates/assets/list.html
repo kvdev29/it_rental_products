@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Assets{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">IT Assets</h1>
+    {% if current_user.is_admin %}
+    <a href="{{ url_for('assets.create_asset') }}" class="btn btn-primary">+ Add Asset</a>
+    {% endif %}
+</div>
+
+<form class="filter-bar" method="GET">
+    <input name="query" value="{{ search_term }}" placeholder="Search name, tag, serial…" style="flex:1;min-width:160px;">
+    <select name="status">
+        <option value="">All Statuses</option>
+        {% for s in status_choices %}
+        <option value="{{ s }}" {% if current_status == s %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+    </select>
+    <select name="type">
+        <option value="">All Types</option>
+        {% for t in type_choices %}
+        <option value="{{ t }}" {% if current_type == t %}selected{% endif %}>{{ t }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+    <a href="{{ url_for('assets.list_assets') }}" class="btn btn-outline btn-sm">Clear</a>
+</form>
+
+<div class="card">
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Asset Tag</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Assigned To</th>
+                    <th>Location</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for asset in assets.items %}
+            <tr>
+                <td><strong>{{ asset.asset_tag }}</strong></td>
+                <td>{{ asset.name }}</td>
+                <td>{{ asset.asset_type }}</td>
+                <td>
+                    {% set s = asset.status|lower|replace(' ','') %}
+                    <span class="badge badge-{{ s }}">{{ asset.status }}</span>
+                </td>
+                <td>{{ asset.assigned_to.full_name if asset.assigned_to else '—' }}</td>
+                <td>{{ asset.location or '—' }}</td>
+                <td>
+                    <div class="btn-group">
+                        <a href="{{ url_for('assets.view_asset', asset_id=asset.id) }}" class="btn btn-outline btn-sm">View</a>
+                        {% if current_user.is_admin %}
+                        <a href="{{ url_for('assets.edit_asset', asset_id=asset.id) }}" class="btn btn-primary btn-sm">Edit</a>
+                        <a href="{{ url_for('assets.delete_asset', asset_id=asset.id) }}" class="btn btn-danger btn-sm">Del</a>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7"><div class="empty-state"><div class="empty-icon">📦</div><p>No assets found.</p></div></td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if assets.pages > 1 %}
+<div class="pagination">
+    <a href="{{ url_for('assets.list_assets', page=assets.prev_num) }}" class="page-link {% if not assets.has_prev %}disabled{% endif %}">‹ Prev</a>
+    {% for p in assets.iter_pages(left_edge=1,right_edge=1,left_current=2,right_current=2) %}
+        {% if p %}
+        <a href="{{ url_for('assets.list_assets', page=p) }}" class="page-link {% if p == assets.page %}active{% endif %}">{{ p }}</a>
+        {% else %}
+        <span class="page-link disabled">…</span>
+        {% endif %}
+    {% endfor %}
+    <a href="{{ url_for('assets.list_assets', page=assets.next_num) }}" class="page-link {% if not assets.has_next %}disabled{% endif %}">Next ›</a>
+</div>
+{% endif %}
+{% endblock %}

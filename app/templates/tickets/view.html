@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Ticket #{{ ticket.id }}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Ticket #{{ ticket.id }}</h1>
+    <div class="btn-group">
+        <a href="{{ url_for('tickets.list_tickets') }}" class="btn btn-outline">← Back</a>
+        {% if current_user.is_admin or (ticket.raised_by_id == current_user.id and ticket.status == 'Open') %}
+        <a href="{{ url_for('tickets.edit_ticket', ticket_id=ticket.id) }}" class="btn btn-primary">Edit</a>
+        {% endif %}
+        {% if current_user.is_admin %}
+        <a href="{{ url_for('tickets.delete_ticket', ticket_id=ticket.id) }}" class="btn btn-danger">Delete</a>
+        {% endif %}
+    </div>
+</div>
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;">
+    <div>
+        <div class="card" style="margin-bottom:1.25rem;">
+            <div class="card-header">{{ ticket.title }}</div>
+            <div class="card-body">
+                <div style="white-space:pre-wrap;font-size:.95rem;margin-bottom:1rem;">{{ ticket.description }}</div>
+                {% if ticket.resolution_notes %}
+                <div style="background:#f0fdf4;border-left:3px solid #16a34a;padding:.75rem;border-radius:0 8px 8px 0;margin-top:.75rem;">
+                    <strong style="font-size:.8rem;color:#166534;">RESOLUTION</strong>
+                    <div style="margin-top:.35rem;font-size:.9rem;white-space:pre-wrap;">{{ ticket.resolution_notes }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Comments -->
+        <div class="card">
+            <div class="card-header">Comments ({{ comments|length }})</div>
+            <div class="card-body">
+                {% for c in comments %}
+                <div class="comment {% if c.is_internal %}internal{% endif %}">
+                    <div class="comment-meta">
+                        <strong>{{ c.author.full_name }}</strong>
+                        {% if c.is_internal %}<span class="internal-badge">Internal Note</span>{% endif %}
+                        &mdash; {{ c.created_at.strftime('%d %b %Y %H:%M') }}
+                    </div>
+                    <div class="comment-body">{{ c.body }}</div>
+                </div>
+                {% else %}
+                <p style="color:var(--text-muted);font-size:.875rem;">No comments yet.</p>
+                {% endfor %}
+            </div>
+
+            {% if ticket.status not in ['Closed', 'Cancelled'] %}
+            <div style="border-top:1px solid var(--border);padding:1.25rem;">
+                <h3 style="font-size:.9rem;font-weight:600;margin-bottom:.75rem;">Add Comment</h3>
+                <form method="POST" action="{{ url_for('tickets.add_comment', ticket_id=ticket.id) }}">
+                    {{ comment_form.hidden_tag() }}
+                    <div class="form-group">
+                        {{ comment_form.body(placeholder="Write your comment here…") }}
+                        {% for e in comment_form.body.errors %}<div class="field-error">{{e}}</div>{% endfor %}
+                    </div>
+                    {% if current_user.is_admin %}
+                    <div class="form-group">
+                        <div class="form-check">{{ comment_form.is_internal() }}{{ comment_form.is_internal.label }}</div>
+                    </div>
+                    {% endif %}
+                    <button type="submit" class="btn btn-primary">Post Comment</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div>
+        <div class="card" style="align-self:start;">
+            <div class="card-header">Ticket Info</div>
+            <div class="card-body">
+                <div class="detail-item" style="margin-bottom:.75rem;"><div class="detail-label">Status</div><div class="detail-value"><span class="badge badge-{{ ticket.status|lower|replace(' ','') }}">{{ ticket.status }}</span></div></div>
+                <div class="detail-item" style="margin-bottom:.75rem;"><div class="detail-label">Priority</div><div class="detail-value"><span class="badge badge-{{ ticket.priority|lower }}">{{ ticket.priority }}</span></div></div>
+                <div class="detail-item" style="margin-bottom:.75rem;"><div class="detail-label">Category</div><div class="detail-value">{{ ticket.category }}</div></div>
+                <div class="detail-item" style="margin-bottom:.75rem;"><div class="detail-label">Raised By</div><div class="detail-value">{{ ticket.raised_by.full_name }}</div></div>
+                <div class="detail-item" style="margin-bottom:.75rem;"><div class="detail-label">Assigned To</div><div class="detail-value">{{ ticket.assigned_to.full_name if ticket.assigned_to else 'Unassigned' }}</div></div>
+                <div class="detail-item" style="margin-bottom:.75rem;"><div class="detail-label">Related Asset</div><div class="detail-value">{% if ticket.related_asset %}<a href="{{ url_for('assets.view_asset', asset_id=ticket.related_asset.id) }}">{{ ticket.related_asset.asset_tag }}</a>{% else %}—{% endif %}</div></div>
+                <div class="detail-item" style="margin-bottom:.75rem;"><div class="detail-label">Created</div><div class="detail-value">{{ ticket.created_at.strftime('%d %b %Y %H:%M') }}</div></div>
+                <div class="detail-item"><div class="detail-label">Last Updated</div><div class="detail-value">{{ ticket.updated_at.strftime('%d %b %Y %H:%M') if ticket.updated_at else '—' }}</div></div>
+                {% if ticket.resolved_at %}
+                <div class="detail-item" style="margin-top:.75rem;"><div class="detail-label">Resolved At</div><div class="detail-value">{{ ticket.resolved_at.strftime('%d %b %Y %H:%M') }}</div></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

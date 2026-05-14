@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Delete Ticket{% endblock %}
+{% block content %}
+<div class="page-header"><h1 class="page-title">Delete Ticket #{{ ticket.id }}</h1></div>
+<div class="card" style="max-width:500px;">
+    <div class="card-body">
+        <p>Are you sure you want to delete ticket <strong>#{{ ticket.id }} — {{ ticket.title }}</strong>?</p>
+        <div class="alert alert-danger" style="margin:1rem 0;">⚠️ All comments on this ticket will also be deleted.</div>
+        <form method="POST">
+            {{ form.hidden_tag() }}{{ form.confirm() }}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                <a href="{{ url_for('tickets.view_ticket', ticket_id=ticket.id) }}" class="btn btn-outline">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

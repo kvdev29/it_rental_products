@@ -1,0 +1,106 @@
+# .github/workflows/ci.yml
+# ─────────────────────────────────────────────────────────────────────────
+# CI/CD Pipeline for SecureITSM
+#
+# Triggers: every push and pull request to main or dev branches
+#
+# Jobs:
+#   1. test  – installs deps, runs pytest with coverage
+#   2. lint  – runs flake8 code style checks
+#
+# This satisfies Task 3 (DevOps Pipeline Artefacts):
+#   - Automated testing on every commit
+#   - Coverage report uploaded as a build artifact
+#   - Clear pass/fail badge for the README
+#
+# Reference: GitHub Actions documentation
+# https://docs.github.com/en/actions
+# ─────────────────────────────────────────────────────────────────────────
+
+name: CI
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  # ── Job 1: Run Test Suite ───────────────────────────────────────────── #
+  test:
+    name: Run Tests & Coverage
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Set environment variables for testing
+        run: |
+          echo "FLASK_ENV=testing" >> $GITHUB_ENV
+          echo "SECRET_KEY=ci-test-secret-key-minimum-32-characters-long" >> $GITHUB_ENV
+          echo "WTF_CSRF_ENABLED=False" >> $GITHUB_ENV
+
+      - name: Run pytest with coverage
+        run: |
+          pytest tests/ -v \
+            --cov=app \
+            --cov-report=term-missing \
+            --cov-report=xml:coverage.xml \
+            --cov-report=html:htmlcov/
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-py${{ matrix.python-version }}
+          path: htmlcov/
+          retention-days: 30
+
+      - name: Check coverage threshold (minimum 70%)
+        run: |
+          coverage report --fail-under=70
+
+  # ── Job 2: Code Quality Lint ────────────────────────────────────────── #
+  lint:
+    name: Code Style Check (flake8)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install flake8
+        run: pip install flake8
+
+      - name: Run flake8
+        run: |
+          flake8 app/ \
+            --max-line-length=100 \
+            --extend-ignore=E501,W503 \
+            --exclude=__pycache__,migrations

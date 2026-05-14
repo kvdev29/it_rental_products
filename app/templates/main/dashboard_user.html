@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Hello, {{ current_user.full_name.split()[0] }} 👋</h1>
+        <p class="page-subtitle">Your device rentals at a glance</p>
+    </div>
+    <a href="{{ url_for('rentals.catalog') }}" class="btn btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Rent a Device
+    </a>
+</div>
+
+{% if current_user.is_guest %}
+<div class="guest-banner">
+    <div class="guest-banner-icon">🔖</div>
+    <div>
+        <div class="guest-banner-title">Guest Access</div>
+        <div class="guest-banner-text">You can browse the catalog and rent devices. Contact IT to upgrade to an employee account for full access.</div>
+    </div>
+</div>
+{% endif %}
+
+{# ── Stat Cards ── #}
+<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);max-width:600px;">
+    <div class="stat-card info">
+        <div class="stat-value">{{ stats.my_active_rentals }}</div>
+        <div class="stat-label">Active Rentals</div>
+    </div>
+    <div class="stat-card {% if stats.my_overdue > 0 %}danger{% endif %}">
+        <div class="stat-value">{{ stats.my_overdue }}</div>
+        <div class="stat-label">Overdue</div>
+    </div>
+    <div class="stat-card success">
+        <div class="stat-value">{{ stats.my_total_rentals }}</div>
+        <div class="stat-label">Total Rented</div>
+    </div>
+</div>
+
+{# ── Currently Checked Out ── #}
+<div class="card" style="margin-bottom:1.5rem;">
+    <div class="card-header">
+        Currently Checked Out
+        <a href="{{ url_for('rentals.catalog') }}" class="btn btn-ghost btn-sm">Browse catalog →</a>
+    </div>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Device</th>
+                    <th>Category</th>
+                    <th>Rented</th>
+                    <th>Return By</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for r in active_rentals %}
+            <tr>
+                <td><strong>{{ r.item.name }}</strong></td>
+                <td style="font-size:.85rem;color:var(--text-muted);">{{ r.item.category }}</td>
+                <td style="font-size:.85rem;color:var(--text-muted);white-space:nowrap;">{{ r.rented_at.strftime('%d %b %Y, %H:%M') }}</td>
+                <td style="font-size:.85rem;white-space:nowrap;{% if r.status == 'Overdue' %}color:var(--danger);font-weight:600;{% else %}color:var(--text-muted);{% endif %}">
+                    {{ r.return_by.strftime('%d %b %Y') }}
+                </td>
+                <td>
+                    {% if r.status == 'Overdue' %}
+                    <span class="badge badge-critical">Overdue</span>
+                    {% else %}
+                    <span class="badge badge-inprogress">Active</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <form method="POST" action="{{ url_for('rentals.return_rental', rental_id=r.id) }}" style="display:inline;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-outline btn-sm"
+                                data-confirm="Mark '{{ r.item.name }}' as returned?">
+                            Return
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6">
+                    <div class="empty-state" style="padding:2rem;">
+                        <div class="empty-icon">🎧</div>
+                        <h3>Nothing checked out</h3>
+                        <p>Need a headset or keyboard? <a href="{{ url_for('rentals.catalog') }}" style="color:var(--primary);">Browse the catalog</a></p>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{# ── Rental History Log ── #}
+<div class="card">
+    <div class="card-header">
+        Rental History
+        <a href="{{ url_for('rentals.my_rentals') }}" class="btn btn-ghost btn-sm">Full history →</a>
+    </div>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Device</th>
+                    <th>Category</th>
+                    <th>Rented</th>
+                    <th>Returned</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for r in rental_history %}
+            <tr>
+                <td><strong>{{ r.item.name }}</strong></td>
+                <td style="font-size:.85rem;color:var(--text-muted);">{{ r.item.category }}</td>
+                <td style="font-size:.85rem;color:var(--text-muted);white-space:nowrap;">{{ r.rented_at.strftime('%d %b %Y') }}</td>
+                <td style="font-size:.85rem;color:var(--text-muted);white-space:nowrap;">
+                    {{ r.returned_at.strftime('%d %b %Y') if r.returned_at else '—' }}
+                </td>
+                <td style="font-size:.82rem;color:var(--text-muted);">{{ r.notes or '—' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5">
+                    <div class="empty-state" style="padding:1.5rem;">
+                        <p style="color:var(--text-muted);">No rental history yet</p>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

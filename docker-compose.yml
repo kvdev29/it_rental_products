@@ -1,0 +1,36 @@
+# docker-compose.yml
+# ─────────────────────────────────────────────────────────────────────────
+# Docker Compose for local development and demonstration
+#
+# Services:
+#   web  – Flask application
+#
+# Usage:
+#   docker compose up --build         # Build and start
+#   docker compose up -d              # Start in background
+#   docker compose exec web flask seed-db   # Seed database
+#   docker compose down               # Stop and remove containers
+# ─────────────────────────────────────────────────────────────────────────
+
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+      - SECRET_KEY=${SECRET_KEY:-dev-secret-key-change-in-production}
+      - DATABASE_URL=sqlite:///itsm.db
+      - WTF_CSRF_ENABLED=True
+      - SESSION_COOKIE_SECURE=False
+    volumes:
+      # Mount source code for hot-reload in development
+      - .:/app
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:5000/auth/login')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s

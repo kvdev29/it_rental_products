@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Sign In{% endblock %}
+{% block content %}
+<div class="auth-split">
+
+    {# ── Left Brand Panel ── #}
+    <div class="auth-brand-panel">
+        <div class="brand-content">
+            <div class="brand-logo">
+                <div class="brand-logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                </div>
+                <h1>GearDesk</h1>
+            </div>
+
+            <p class="brand-tagline">Borrow the gear you need,<br>right when you need it.</p>
+
+            <div class="brand-features">
+                <div class="brand-feature">
+                    <div class="brand-feature-check">✓</div>
+                    <span>Browse headsets, keyboards &amp; more</span>
+                </div>
+                <div class="brand-feature">
+                    <div class="brand-feature-check">✓</div>
+                    <span>Instant confirmation — no approvals needed</span>
+                </div>
+                <div class="brand-feature">
+                    <div class="brand-feature-check">✓</div>
+                    <span>Track what you have out &amp; when to return</span>
+                </div>
+                <div class="brand-feature">
+                    <div class="brand-feature-check">✓</div>
+                    <span>Return with one click when you're done</span>
+                </div>
+            </div>
+
+            <hr class="brand-divider">
+            <p class="brand-company">© 2025 GearDesk &mdash; Office Device Rental Portal</p>
+        </div>
+    </div>
+
+    {# ── Right Form Panel ── #}
+    <div class="auth-form-panel">
+        <div class="auth-form-inner">
+
+            <h2 class="auth-heading">Welcome back</h2>
+            <p class="auth-subheading">Sign in to your GearDesk account</p>
+
+            <form method="POST" action="{{ url_for('auth.login') }}" novalidate>
+                {{ form.hidden_tag() }}
+
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username"
+                           value="{{ form.username.data or '' }}"
+                           placeholder="e.g. john.smith"
+                           autocomplete="username" autofocus>
+                    {% for error in form.username.errors %}
+                    <div class="field-error">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password"
+                           placeholder="Enter your password"
+                           autocomplete="current-password">
+                    {% for error in form.password.errors %}
+                    <div class="field-error">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg" style="width:100%;justify-content:center;">
+                    Sign In
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </button>
+            </form>
+
+            <div class="auth-footer-link">
+                New to GearDesk? <a href="{{ url_for('auth.register') }}">Create an account</a>
+            </div>
+
+            <div style="margin-top:1rem;text-align:center;font-size:.8rem;color:var(--text-light);">
+                Forgot your password? Contact your IT administrator.
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Rent a Device{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Rent a Device</h1>
+        <p class="page-subtitle">Borrow office equipment for the day — no paperwork needed</p>
+    </div>
+    <a href="{{ url_for('rentals.my_rentals') }}" class="btn btn-outline">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        My Rentals
+    </a>
+</div>
+
+{% if items %}
+
+{# Group items by category #}
+{% set categories = items | map(attribute='category') | unique | list %}
+{% for cat in categories %}
+{% set cat_items = items | selectattr('category', 'equalto', cat) | list %}
+<h2 style="font-size:1rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin:2rem 0 1rem;">{{ cat }}</h2>
+<div class="rental-catalog-grid">
+    {% for item in cat_items %}
+    <div class="rental-card {% if not item.is_available %}rental-card-unavailable{% endif %}">
+        <div class="rental-card-icon">
+            {% if item.category == 'Headset' %}🎧
+            {% elif item.category == 'Keyboard' %}⌨️
+            {% elif item.category == 'Mouse' %}🖱️
+            {% elif item.category == 'Monitor' %}🖥️
+            {% elif item.category == 'Webcam' %}📷
+            {% elif item.category == 'Laptop' %}💻
+            {% elif item.category == 'Tablet' %}📱
+            {% elif item.category == 'Phone' %}📞
+            {% else %}🔌
+            {% endif %}
+        </div>
+        <div class="rental-card-body">
+            <div class="rental-card-name">{{ item.name }}</div>
+            {% if item.description %}
+            <div class="rental-card-desc">{{ item.description }}</div>
+            {% endif %}
+            <div class="rental-card-stock">
+                {% if item.is_available %}
+                <span class="badge badge-inuse" style="background:var(--success-bg);color:var(--success);">
+                    {{ item.quantity_available }} of {{ item.quantity_total }} available
+                </span>
+                {% else %}
+                <span class="badge badge-decommissioned">All checked out</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="rental-card-action">
+            {% if item.is_available %}
+            <a href="{{ url_for('rentals.request_rental', item_id=item.id) }}" class="btn btn-primary btn-sm">
+                Rent
+            </a>
+            {% else %}
+            <button class="btn btn-outline btn-sm" disabled>Unavailable</button>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endfor %}
+
+{% else %}
+<div class="empty-state" style="margin-top:4rem;">
+    <div class="empty-icon">📦</div>
+    <h3>No devices available</h3>
+    <p>The rental catalog is empty. Ask your IT administrator to add devices.</p>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">My Profile</h1>
+    <a href="{{ url_for('auth.change_password') }}" class="btn btn-outline">Change Password</a>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+    <div class="form-card">
+        <h2 style="font-size:1rem;font-weight:600;margin-bottom:1rem;">Edit Profile</h2>
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <div class="form-group">{{ form.full_name.label }}{{ form.full_name() }}{% for e in form.full_name.errors %}<div class="field-error">{{e}}</div>{% endfor %}</div>
+            <div class="form-group">{{ form.email.label }}{{ form.email() }}{% for e in form.email.errors %}<div class="field-error">{{e}}</div>{% endfor %}</div>
+            <div class="form-group">{{ form.department.label }}{{ form.department() }}</div>
+            <div class="form-group">{{ form.phone.label }}{{ form.phone() }}</div>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+        </form>
+    </div>
+    <div class="card">
+        <div class="card-header">Account Information</div>
+        <div class="card-body">
+            <div class="detail-item" style="margin-bottom:.75rem;">
+                <div class="detail-label">Username</div>
+                <div class="detail-value">{{ current_user.username }}</div>
+            </div>
+            <div class="detail-item" style="margin-bottom:.75rem;">
+                <div class="detail-label">Role</div>
+                <div class="detail-value"><span class="badge {% if current_user.is_admin %}badge-admin-role{% else %}badge-user-role{% endif %}">{{ current_user.role | capitalize }}</span></div>
+            </div>
+            <div class="detail-item" style="margin-bottom:.75rem;">
+                <div class="detail-label">Last Login</div>
+                <div class="detail-value">{{ current_user.last_login.strftime('%d %b %Y %H:%M') if current_user.last_login else 'N/A' }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Account Created</div>
+                <div class="detail-value">{{ current_user.created_at.strftime('%d %b %Y') }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

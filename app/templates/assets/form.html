@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">{{ title }}</h1>
+    <a href="{{ url_for('assets.list_assets') }}" class="btn btn-outline">← Back</a>
+</div>
+<div class="form-card" style="max-width:800px;">
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="form-grid-2">
+            <div class="form-group">{{ form.name.label }}{{ form.name() }}{% for e in form.name.errors %}<div class="field-error">{{e}}</div>{% endfor %}</div>
+            <div class="form-group">{{ form.asset_tag.label }}{{ form.asset_tag() }}{% for e in form.asset_tag.errors %}<div class="field-error">{{e}}</div>{% endfor %}</div>
+            <div class="form-group">{{ form.asset_type.label }}{{ form.asset_type() }}{% for e in form.asset_type.errors %}<div class="field-error">{{e}}</div>{% endfor %}</div>
+            <div class="form-group">{{ form.status.label }}{{ form.status() }}</div>
+            <div class="form-group">{{ form.manufacturer.label }}{{ form.manufacturer() }}</div>
+            <div class="form-group">{{ form.model.label }}{{ form.model() }}</div>
+            <div class="form-group">{{ form.serial_number.label }}{{ form.serial_number() }}{% for e in form.serial_number.errors %}<div class="field-error">{{e}}</div>{% endfor %}</div>
+            <div class="form-group">{{ form.location.label }}{{ form.location() }}</div>
+            <div class="form-group">{{ form.purchase_date.label }}{{ form.purchase_date() }}</div>
+            <div class="form-group">{{ form.purchase_cost.label }}{{ form.purchase_cost() }}</div>
+            <div class="form-group">{{ form.warranty_expiry.label }}{{ form.warranty_expiry() }}</div>
+            <div class="form-group">{{ form.assigned_to_id.label }}{{ form.assigned_to_id() }}</div>
+        </div>
+        <div class="form-group">{{ form.notes.label }}{{ form.notes() }}</div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{{ 'Update Asset' if asset else 'Add Asset' }}</button>
+            <a href="{{ url_for('assets.list_assets') }}" class="btn btn-outline">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

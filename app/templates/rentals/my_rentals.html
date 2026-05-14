@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}My Rentals{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">My Rentals</h1>
+        <p class="page-subtitle">Devices you currently have checked out</p>
+    </div>
+    <a href="{{ url_for('rentals.catalog') }}" class="btn btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Rent Another
+    </a>
+</div>
+
+{# ── Active Rentals ── #}
+<h2 style="font-size:1rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:1rem;">Currently Checked Out</h2>
+
+{% if active %}
+<div class="card" style="margin-bottom:2rem;">
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Device</th>
+                    <th>Rented</th>
+                    <th>Return By</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for r in active %}
+            <tr>
+                <td>
+                    <strong>{{ r.item.name }}</strong>
+                    <div style="font-size:.78rem;color:var(--text-muted);">{{ r.item.category }}</div>
+                </td>
+                <td style="font-size:.85rem;white-space:nowrap;">{{ r.rented_at.strftime('%d %b %Y') }}</td>
+                <td style="font-size:.85rem;white-space:nowrap;">{{ r.return_by.strftime('%d %b %Y') }}</td>
+                <td>
+                    {% if r.status == 'Overdue' %}
+                    <span class="badge badge-critical">Overdue</span>
+                    {% else %}
+                    <span class="badge badge-inprogress">Active</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <form method="POST" action="{{ url_for('rentals.return_rental', rental_id=r.id) }}" style="display:inline;">
+                        {{ csrf_token_field() if csrf_token_field is defined }}
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-outline btn-sm"
+                                data-confirm="Mark '{{ r.item.name }}' as returned?">
+                            Mark Returned
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="card" style="margin-bottom:2rem;">
+    <div class="empty-state" style="padding:2.5rem;">
+        <div class="empty-icon">✅</div>
+        <h3>Nothing checked out</h3>
+        <p>You have no active rentals. <a href="{{ url_for('rentals.catalog') }}" style="color:var(--primary);">Browse the catalog</a> to borrow a device.</p>
+    </div>
+</div>
+{% endif %}
+
+{# ── Rental History ── #}
+{% if history %}
+<h2 style="font-size:1rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:1rem;">Rental History</h2>
+<div class="card">
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Device</th>
+                    <th>Rented</th>
+                    <th>Returned</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for r in history %}
+            <tr>
+                <td>
+                    <strong>{{ r.item.name }}</strong>
+                    <div style="font-size:.78rem;color:var(--text-muted);">{{ r.item.category }}</div>
+                </td>
+                <td style="font-size:.85rem;white-space:nowrap;color:var(--text-muted);">{{ r.rented_at.strftime('%d %b %Y') }}</td>
+                <td style="font-size:.85rem;white-space:nowrap;color:var(--text-muted);">{{ r.returned_at.strftime('%d %b %Y') if r.returned_at else '—' }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

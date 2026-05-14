@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Rental Catalog{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Rental Catalog</h1>
+        <p class="page-subtitle">Devices available for staff to borrow</p>
+    </div>
+    <div class="btn-group">
+        <a href="{{ url_for('rentals.admin_rentals') }}" class="btn btn-outline">Active Rentals</a>
+        <a href="{{ url_for('rentals.new_item') }}" class="btn btn-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Item
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Total</th>
+                    <th>Available</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for item in items %}
+            <tr>
+                <td>
+                    <strong>{{ item.name }}</strong>
+                    {% if item.description %}
+                    <div style="font-size:.78rem;color:var(--text-muted);">{{ item.description }}</div>
+                    {% endif %}
+                </td>
+                <td style="font-size:.85rem;color:var(--text-muted);">{{ item.category }}</td>
+                <td style="font-size:.9rem;">{{ item.quantity_total }}</td>
+                <td style="font-size:.9rem;">
+                    <span style="{% if item.quantity_available == 0 %}color:var(--danger);{% elif item.quantity_available < item.quantity_total %}color:var(--warning);{% else %}color:var(--success);{% endif %}font-weight:600;">
+                        {{ item.quantity_available }}
+                    </span>
+                </td>
+                <td>
+                    {% if item.is_active %}
+                    <span class="badge badge-open">Active</span>
+                    {% else %}
+                    <span class="badge badge-cancelled">Disabled</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('rentals.edit_item', item_id=item.id) }}" class="btn btn-ghost btn-sm">Edit</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6">
+                    <div class="empty-state" style="padding:2rem;">
+                        <div class="empty-icon">📦</div>
+                        <h3>No items yet</h3>
+                        <p><a href="{{ url_for('rentals.new_item') }}" style="color:var(--primary);">Add your first rental item</a></p>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

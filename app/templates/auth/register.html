@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% block title %}Create Account{% endblock %}
+{% block content %}
+<div class="auth-split">
+
+    {# ── Left Brand Panel ── #}
+    <div class="auth-brand-panel">
+        <div class="brand-content">
+            <div class="brand-logo">
+                <div class="brand-logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                </div>
+                <h1>GearDesk</h1>
+            </div>
+
+            <p class="brand-tagline">Get set up in seconds and start borrowing gear today.</p>
+
+            <div class="brand-features">
+                <div class="brand-feature">
+                    <div class="brand-feature-check">✓</div>
+                    <span>Browse headsets, keyboards, mice &amp; more</span>
+                </div>
+                <div class="brand-feature">
+                    <div class="brand-feature-check">✓</div>
+                    <span>Instant confirmation — no waiting for approval</span>
+                </div>
+                <div class="brand-feature">
+                    <div class="brand-feature-check">✓</div>
+                    <span>Return with one click when you're done</span>
+                </div>
+                <div class="brand-feature">
+                    <div class="brand-feature-check">✓</div>
+                    <span>Your rental history always in one place</span>
+                </div>
+            </div>
+
+            <hr class="brand-divider">
+            <p class="brand-company">© 2025 GearDesk &mdash; Office Device Rental Portal</p>
+        </div>
+    </div>
+
+    {# ── Right Form Panel ── #}
+    <div class="auth-form-panel wide">
+        <div class="auth-form-inner wide">
+
+            <h2 class="auth-heading">Create your account</h2>
+            <p class="auth-subheading">Choose how you'll use GearDesk</p>
+
+            <form method="POST" action="{{ url_for('auth.register') }}" novalidate>
+                {{ form.hidden_tag() }}
+
+                {# ── Account Type ── #}
+                <div class="account-type-selector">
+                    <label class="account-type-card" for="type_employee">
+                        <input type="radio" id="type_employee" name="account_type"
+                               value="user" {% if not form.account_type.data or form.account_type.data == 'user' %}checked{% endif %}>
+                        <div class="account-type-card-inner">
+                            <div class="account-type-icon">💼</div>
+                            <div class="account-type-label">Employee</div>
+                            <div class="account-type-desc">I work here — full access to rent devices</div>
+                        </div>
+                    </label>
+                    <label class="account-type-card" for="type_guest">
+                        <input type="radio" id="type_guest" name="account_type"
+                               value="guest" {% if form.account_type.data == 'guest' %}checked{% endif %}>
+                        <div class="account-type-card-inner">
+                            <div class="account-type-icon">👤</div>
+                            <div class="account-type-label">Guest</div>
+                            <div class="account-type-desc">I'm visiting — temporary device access</div>
+                        </div>
+                    </label>
+                </div>
+                {% for error in form.account_type.errors %}
+                <div class="field-error" style="margin-bottom:.75rem;">{{ error }}</div>
+                {% endfor %}
+
+                {# ── Personal Details ── #}
+                <div class="form-group">
+                    <label for="full_name" class="required">Full Name</label>
+                    <input type="text" id="full_name" name="full_name"
+                           value="{{ form.full_name.data or '' }}"
+                           placeholder="e.g. Jane Smith" autofocus autocomplete="name">
+                    {% for error in form.full_name.errors %}
+                    <div class="field-error">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    <label for="username" class="required">
+                        Choose a Username
+                        <span class="field-badge">Used to sign in</span>
+                    </label>
+                    <input type="text" id="username" name="username"
+                           value="{{ form.username.data or '' }}"
+                           placeholder="e.g. jane.smith"
+                           autocomplete="username">
+                    {% for error in form.username.errors %}
+                    <div class="field-error">{{ error }}</div>
+                    {% endfor %}
+                    <div class="field-hint">Pick something memorable — this is what you'll type on the login screen. Letters, numbers, dots and hyphens only.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email" class="required">Work Email Address</label>
+                    <input type="email" id="email" name="email"
+                           value="{{ form.email.data or '' }}"
+                           placeholder="jane.smith@company.com"
+                           autocomplete="email">
+                    {% for error in form.email.errors %}
+                    <div class="field-error">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    <label for="department">Department <span style="font-weight:400;color:var(--text-muted);">(optional)</span></label>
+                    <input type="text" id="department" name="department"
+                           value="{{ form.department.data or '' }}"
+                           placeholder="e.g. Finance, Engineering, HR">
+                    {% for error in form.department.errors %}
+                    <div class="field-error">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label for="password" class="required">Password</label>
+                        <input type="password" id="password" name="password"
+                               placeholder="Create a strong password"
+                               autocomplete="new-password">
+                        {% for error in form.password.errors %}
+                        <div class="field-error">{{ error }}</div>
+                        {% endfor %}
+                        <div class="field-hint">Min 8 chars, uppercase, lowercase, number &amp; symbol</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="password2" class="required">Confirm Password</label>
+                        <input type="password" id="password2" name="password2"
+                               placeholder="Repeat your password"
+                               autocomplete="new-password">
+                        {% for error in form.password2.errors %}
+                        <div class="field-error">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg" style="width:100%;justify-content:center;margin-top:.5rem;">
+                    Create Account
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </button>
+            </form>
+
+            <div class="auth-footer-link">
+                Already have an account? <a href="{{ url_for('auth.login') }}">Sign in</a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    // Auto-suggest username from full name (only while username is untouched)
+    const fullNameInput = document.getElementById('full_name');
+    const usernameInput = document.getElementById('username');
+    let usernameTouched = usernameInput.value.length > 0;
+
+    usernameInput.addEventListener('input', () => { usernameTouched = true; });
+
+    fullNameInput.addEventListener('input', () => {
+        if (usernameTouched) return;
+        const parts = fullNameInput.value.trim().toLowerCase().split(/\s+/);
+        if (parts.length >= 2) {
+            usernameInput.value = (parts[0] + '.' + parts[parts.length - 1])
+                .replace(/[^a-z0-9._-]/g, '');
+        } else if (parts.length === 1 && parts[0]) {
+            usernameInput.value = parts[0].replace(/[^a-z0-9._-]/g, '');
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

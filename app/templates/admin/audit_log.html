@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Audit Log{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">🔍 Security Audit Log</h1>
+    <span style="font-size:.875rem;color:var(--text-muted);">Immutable record of all system events</span>
+</div>
+
+<form class="filter-bar" method="GET">
+    <select name="event_type">
+        <option value="">All Event Types</option>
+        {% for et in event_types %}
+        <option value="{{ et }}" {% if current_event == et %}selected{% endif %}>{{ et }}</option>
+        {% endfor %}
+    </select>
+    <select name="user_id">
+        <option value="">All Users</option>
+        {% for u in users %}
+        <option value="{{ u.id }}" {% if current_user_id == u.id|string %}selected{% endif %}>{{ u.username }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+    <a href="{{ url_for('admin.audit_log') }}" class="btn btn-outline btn-sm">Clear</a>
+</form>
+
+<div class="card">
+    <div class="table-wrapper">
+        <table>
+            <thead><tr><th>Timestamp</th><th>Event</th><th>User</th><th>Resource</th><th>Description</th><th>IP Address</th></tr></thead>
+            <tbody>
+            {% for log in logs.items %}
+            <tr>
+                <td style="white-space:nowrap;font-size:.8rem;">{{ log.timestamp.strftime('%d %b %Y %H:%M:%S') }}</td>
+                <td><span class="ev-{{ log.event_type }}" style="font-size:.8rem;font-weight:600;">{{ log.event_type }}</span></td>
+                <td style="font-size:.85rem;">{{ log.user.username if log.user else '<i style="color:var(--text-muted)">System</i>'|safe }}</td>
+                <td style="font-size:.8rem;">{% if log.resource_type %}{{ log.resource_type }}{% if log.resource_id %} #{{ log.resource_id }}{% endif %}{% else %}—{% endif %}</td>
+                <td style="font-size:.85rem;max-width:320px;">{{ log.description }}</td>
+                <td style="font-size:.8rem;font-family:monospace;">{{ log.ip_address or '—' }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" style="text-align:center;color:var(--text-muted);">No log entries found.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if logs.pages > 1 %}
+<div class="pagination">
+    <a href="{{ url_for('admin.audit_log', page=logs.prev_num) }}" class="page-link {% if not logs.has_prev %}disabled{% endif %}">‹</a>
+    {% for p in logs.iter_pages(left_edge=1,right_edge=1,left_current=2,right_current=2) %}
+        {% if p %}<a href="{{ url_for('admin.audit_log', page=p) }}" class="page-link {% if p==logs.page %}active{% endif %}">{{ p }}</a>
+        {% else %}<span class="page-link disabled">…</span>{% endif %}
+    {% endfor %}
+    <a href="{{ url_for('admin.audit_log', page=logs.next_num) }}" class="page-link {% if not logs.has_next %}disabled{% endif %}">›</a>
+</div>
+{% endif %}
+{% endblock %}

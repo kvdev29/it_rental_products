@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Tickets{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Helpdesk Tickets</h1>
+    <a href="{{ url_for('tickets.create_ticket') }}" class="btn btn-primary">+ Raise Ticket</a>
+</div>
+
+<form class="filter-bar" method="GET">
+    <input name="query" value="{{ search_term }}" placeholder="Search tickets…" style="flex:1;min-width:160px;">
+    <select name="status">
+        <option value="">All Statuses</option>
+        {% for s in status_choices %}
+        <option value="{{ s }}" {% if current_status == s %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+    </select>
+    <select name="priority">
+        <option value="">All Priorities</option>
+        {% for p in priority_choices %}
+        <option value="{{ p }}" {% if current_priority == p %}selected{% endif %}>{{ p }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+    <a href="{{ url_for('tickets.list_tickets') }}" class="btn btn-outline btn-sm">Clear</a>
+</form>
+
+<div class="card">
+    <div class="table-wrapper">
+        <table>
+            <thead><tr>
+                <th>#</th><th>Title</th><th>Category</th>
+                <th>Priority</th><th>Status</th><th>Raised By</th>
+                <th>Assigned</th><th>Created</th><th>Actions</th>
+            </tr></thead>
+            <tbody>
+            {% for t in tickets.items %}
+            <tr>
+                <td>#{{ t.id }}</td>
+                <td><a href="{{ url_for('tickets.view_ticket', ticket_id=t.id) }}">{{ t.title[:45] }}{% if t.title|length > 45 %}…{% endif %}</a></td>
+                <td>{{ t.category }}</td>
+                <td><span class="badge badge-{{ t.priority|lower }}">{{ t.priority }}</span></td>
+                <td><span class="badge badge-{{ t.status|lower|replace(' ','') }}">{{ t.status }}</span></td>
+                <td>{{ t.raised_by.username }}</td>
+                <td>{{ t.assigned_to.username if t.assigned_to else '—' }}</td>
+                <td style="white-space:nowrap;font-size:.8rem;">{{ t.created_at.strftime('%d %b %Y') }}</td>
+                <td>
+                    <div class="btn-group">
+                        <a href="{{ url_for('tickets.view_ticket', ticket_id=t.id) }}" class="btn btn-outline btn-sm">View</a>
+                        {% if current_user.is_admin or (t.raised_by_id == current_user.id and t.status == 'Open') %}
+                        <a href="{{ url_for('tickets.edit_ticket', ticket_id=t.id) }}" class="btn btn-primary btn-sm">Edit</a>
+                        {% endif %}
+                        {% if current_user.is_admin %}
+                        <a href="{{ url_for('tickets.delete_ticket', ticket_id=t.id) }}" class="btn btn-danger btn-sm">Del</a>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="9"><div class="empty-state"><div class="empty-icon">🎫</div><p>No tickets found.</p></div></td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if tickets.pages > 1 %}
+<div class="pagination">
+    <a href="{{ url_for('tickets.list_tickets', page=tickets.prev_num) }}" class="page-link {% if not tickets.has_prev %}disabled{% endif %}">‹</a>
+    {% for p in tickets.iter_pages(left_edge=1,right_edge=1,left_current=2,right_current=2) %}
+        {% if p %}<a href="{{ url_for('tickets.list_tickets', page=p) }}" class="page-link {% if p==tickets.page %}active{% endif %}">{{ p }}</a>
+        {% else %}<span class="page-link disabled">…</span>{% endif %}
+    {% endfor %}
+    <a href="{{ url_for('tickets.list_tickets', page=tickets.next_num) }}" class="page-link {% if not tickets.has_next %}disabled{% endif %}">›</a>
+</div>
+{% endif %}
+{% endblock %}

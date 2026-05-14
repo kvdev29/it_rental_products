@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{{ asset.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">{{ asset.asset_tag }} — {{ asset.name }}</h1>
+    <div class="btn-group">
+        <a href="{{ url_for('assets.list_assets') }}" class="btn btn-outline">← Back</a>
+        {% if current_user.is_admin %}
+        <a href="{{ url_for('assets.edit_asset', asset_id=asset.id) }}" class="btn btn-primary">Edit</a>
+        <a href="{{ url_for('assets.delete_asset', asset_id=asset.id) }}" class="btn btn-danger">Delete</a>
+        {% endif %}
+    </div>
+</div>
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;">
+    <div class="card">
+        <div class="card-header">Asset Details</div>
+        <div class="card-body">
+            <div class="detail-grid">
+                <div class="detail-item"><div class="detail-label">Asset Tag</div><div class="detail-value">{{ asset.asset_tag }}</div></div>
+                <div class="detail-item"><div class="detail-label">Status</div><div class="detail-value"><span class="badge badge-{{ asset.status|lower|replace(' ','') }}">{{ asset.status }}</span></div></div>
+                <div class="detail-item"><div class="detail-label">Type</div><div class="detail-value">{{ asset.asset_type }}</div></div>
+                <div class="detail-item"><div class="detail-label">Manufacturer</div><div class="detail-value">{{ asset.manufacturer or '—' }}</div></div>
+                <div class="detail-item"><div class="detail-label">Model</div><div class="detail-value">{{ asset.model or '—' }}</div></div>
+                <div class="detail-item"><div class="detail-label">Serial Number</div><div class="detail-value">{{ asset.serial_number or '—' }}</div></div>
+                <div class="detail-item"><div class="detail-label">Location</div><div class="detail-value">{{ asset.location or '—' }}</div></div>
+                <div class="detail-item"><div class="detail-label">Assigned To</div><div class="detail-value">{{ asset.assigned_to.full_name if asset.assigned_to else 'Unassigned' }}</div></div>
+                <div class="detail-item"><div class="detail-label">Purchase Date</div><div class="detail-value">{{ asset.purchase_date.strftime('%d %b %Y') if asset.purchase_date else '—' }}</div></div>
+                <div class="detail-item"><div class="detail-label">Purchase Cost</div><div class="detail-value">{% if asset.purchase_cost %}£{{ '%.2f'|format(asset.purchase_cost|float) }}{% else %}—{% endif %}</div></div>
+                <div class="detail-item"><div class="detail-label">Warranty Expiry</div><div class="detail-value">{{ asset.warranty_expiry.strftime('%d %b %Y') if asset.warranty_expiry else '—' }}</div></div>
+                <div class="detail-item"><div class="detail-label">Added</div><div class="detail-value">{{ asset.created_at.strftime('%d %b %Y') }}</div></div>
+            </div>
+            {% if asset.notes %}
+            <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);">
+                <div class="detail-label">Notes</div>
+                <div style="margin-top:.35rem;font-size:.9rem;white-space:pre-wrap;">{{ asset.notes }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card" style="align-self:start;">
+        <div class="card-header">Related Tickets</div>
+        <div class="card-body">
+            {% set related = asset.tickets.all() %}
+            {% if related %}
+            {% for t in related %}
+            <div style="margin-bottom:.5rem;">
+                <a href="{{ url_for('tickets.view_ticket', ticket_id=t.id) }}">#{{ t.id }} {{ t.title[:30] }}</a>
+                <span class="badge badge-{{ t.status|lower|replace(' ','') }}" style="float:right;">{{ t.status }}</span>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p style="color:var(--text-muted);font-size:.875rem;">No tickets linked to this asset.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
