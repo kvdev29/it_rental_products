@@ -923,3 +923,56 @@ td a:hover { text-decoration: underline; }
 .mt-1 { margin-top: .5rem; }
 .mt-2 { margin-top: 1rem; }
 .gap-1 { gap: .5rem; }
+
+/* ─── Rental Catalog Location Tabs ─── */
+.location-tabs {
+    display: flex;
+    gap: .4rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+}
+.location-tab {
+    padding: .45rem 1rem;
+    border-radius: 20px;
+    font-size: .85rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    text-decoration: none;
+    transition: all .15s;
+}
+.location-tab:hover { background: var(--bg); color: var(--text); border-color: var(--border-dk); }
+.location-tab-active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.location-tab-active:hover { background: var(--primary-dk); color: #fff; }
+
+.location-section-header {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    font-weight: 600;
+    font-size: .85rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin: 1.5rem 0 .75rem;
+    padding-bottom: .4rem;
+    border-bottom: 1px solid var(--border);
+}
+.catalog-category-heading {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 1.25rem 0 .6rem;
+}
+.location-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    font-size: .75rem;
+    color: var(--text-muted);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: .1rem .5rem;
+}

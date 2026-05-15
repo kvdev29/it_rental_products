@@ -38,13 +38,16 @@ def _sync_overdue():
 @rentals_bp.route('/')
 @login_required
 def catalog():
-    """Browse devices available for rental."""
+    """Browse devices available for rental, optionally filtered by location."""
     _sync_overdue()
-    items = (RentalItem.query
-             .filter_by(is_active=True)
-             .order_by(RentalItem.category, RentalItem.name)
-             .all())
-    return render_template('rentals/catalog.html', items=items)
+    from app.models import RentalItem as RI
+    location = request.args.get('location', '')
+    query = RentalItem.query.filter_by(is_active=True)
+    if location in RI.LOCATION_CHOICES:
+        query = query.filter_by(location=location)
+    items = query.order_by(RentalItem.location, RentalItem.category, RentalItem.name).all()
+    return render_template('rentals/catalog.html', items=items,
+                           locations=RI.LOCATION_CHOICES, active_location=location)
 
 
 @rentals_bp.route('/request/<int:item_id>', methods=['GET', 'POST'])
@@ -186,6 +189,7 @@ def new_item():
         item = RentalItem(
             name=form.name.data,
             category=form.category.data,
+            location=form.location.data,
             description=form.description.data or '',
             quantity_total=form.quantity_total.data,
             is_active=form.is_active.data,
@@ -213,6 +217,7 @@ def edit_item(item_id):
     if form.validate_on_submit():
         item.name = form.name.data
         item.category = form.category.data
+        item.location = form.location.data
         item.description = form.description.data or ''
         item.quantity_total = form.quantity_total.data
         item.is_active = form.is_active.data

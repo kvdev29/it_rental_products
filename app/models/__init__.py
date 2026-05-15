@@ -289,12 +289,14 @@ class RentalItem(db.Model):
     """A device available for short-term rental within the office."""
     __tablename__ = 'rental_items'
 
-    CATEGORY_CHOICES = ['Headset', 'Keyboard', 'Mouse', 'Monitor', 'Webcam',
+    CATEGORY_CHOICES = ['Headset', 'Keyboard', 'Mouse', 'Webcam',
                         'Laptop', 'Tablet', 'Phone', 'Cable / Adapter', 'Other']
+    LOCATION_CHOICES = ['London', 'Hove', 'Cardiff']
 
     id             = db.Column(db.Integer, primary_key=True)
     name           = db.Column(db.String(120), nullable=False)
     category       = db.Column(db.String(50), nullable=False)
+    location       = db.Column(db.String(50), nullable=False, default='London')
     description    = db.Column(db.Text)
     quantity_total = db.Column(db.Integer, nullable=False, default=1)
     is_active      = db.Column(db.Boolean, default=True, nullable=False)

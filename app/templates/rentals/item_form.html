@@ -29,10 +29,16 @@
                         {% for e in form.category.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
                     </div>
                     <div class="form-group">
-                        {{ form.quantity_total.label(class="form-label") }}
-                        {{ form.quantity_total(class="form-control" + (" is-invalid" if form.quantity_total.errors else ""), min=1) }}
-                        {% for e in form.quantity_total.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                        {{ form.location.label(class="form-label") }}
+                        {{ form.location(class="form-control" + (" is-invalid" if form.location.errors else "")) }}
+                        {% for e in form.location.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
                     </div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.quantity_total.label(class="form-label") }}
+                    {{ form.quantity_total(class="form-control" + (" is-invalid" if form.quantity_total.errors else ""), min=1) }}
+                    {% for e in form.quantity_total.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
                 </div>
 
                 <div class="form-group">

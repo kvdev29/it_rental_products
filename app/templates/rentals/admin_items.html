@@ -23,6 +23,7 @@
                 <tr>
                     <th>Name</th>
                     <th>Category</th>
+                    <th>Location</th>
                     <th>Total</th>
                     <th>Available</th>
                     <th>Status</th>
@@ -39,6 +40,7 @@
                     {% endif %}
                 </td>
                 <td style="font-size:.85rem;color:var(--text-muted);">{{ item.category }}</td>
+                <td style="font-size:.85rem;color:var(--text-muted);">{{ item.location }}</td>
                 <td style="font-size:.9rem;">{{ item.quantity_total }}</td>
                 <td style="font-size:.9rem;">
                     <span style="{% if item.quantity_available == 0 %}color:var(--danger);{% elif item.quantity_available < item.quantity_total %}color:var(--warning);{% else %}color:var(--success);{% endif %}font-weight:600;">
@@ -58,7 +60,7 @@
             </tr>
             {% else %}
             <tr>
-                <td colspan="6">
+                <td colspan="7">
                     <div class="empty-state" style="padding:2rem;">
                         <div class="empty-icon">📦</div>
                         <h3>No items yet</h3>

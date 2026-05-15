@@ -355,6 +355,7 @@ class RentalItemForm(FlaskForm):
     """Admin form to add or edit a rental catalog item."""
     name = StringField('Item Name', validators=[DataRequired(), Length(min=2, max=120), no_html])
     category = SelectField('Category', choices=[])
+    location = SelectField('Office Location', choices=[])
     description = TextAreaField('Description', validators=[Optional(), Length(max=500), no_html])
     quantity_total = IntegerField('Total Quantity', validators=[
         DataRequired(), NumberRange(min=1, max=999, message='Quantity must be between 1 and 999.'),
@@ -366,3 +367,4 @@ class RentalItemForm(FlaskForm):
         from app.models import RentalItem
         super().__init__(*args, **kwargs)
         self.category.choices = [(c, c) for c in RentalItem.CATEGORY_CHOICES]
+        self.location.choices = [(l, l) for l in RentalItem.LOCATION_CHOICES]
