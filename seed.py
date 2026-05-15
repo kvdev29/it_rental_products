@@ -507,6 +507,86 @@ def seed_database():
                        description='For older MacBooks and Surface devices', quantity_total=20),
             RentalItem(name='USB-C Multiport Adapter', category='Cable / Adapter', location='Cardiff',
                        description='HDMI, 2x USB-A, SD card reader', quantity_total=20),
+
+            # ── Additional Headsets ────────────────────────────────────── #
+            RentalItem(name='Dell Pro Stereo Headset UC350', category='Headset', location='London',
+                       description='Dell wired USB headset, certified for UC platforms', quantity_total=20),
+            RentalItem(name='Dell Speakerphone SP20', category='Headset', location='Hove',
+                       description='Portable speakerphone for desk and meeting rooms', quantity_total=20),
+            RentalItem(name='Poly Voyager Focus 2', category='Headset', location='Cardiff',
+                       description='Wireless headset with active noise cancellation', quantity_total=20),
+            RentalItem(name='Plantronics Blackwire 5220', category='Headset', location='London',
+                       description='Stereo wired USB-A headset', quantity_total=20),
+
+            # ── Additional Keyboards ───────────────────────────────────── #
+            RentalItem(name='Dell KB900 Premier Collaboration', category='Keyboard', location='London',
+                       description='Dell wireless keyboard with built-in Teams button', quantity_total=20),
+            RentalItem(name='Dell KM7120W Multi-Device', category='Keyboard', location='Hove',
+                       description='Dell wireless keyboard and mouse combo, multi-device', quantity_total=20),
+            RentalItem(name='Logitech K780 Multi-Device', category='Keyboard', location='Cardiff',
+                       description='Full-size wireless keyboard for desktop, tablet, phone', quantity_total=20),
+            RentalItem(name='Microsoft Bluetooth Keyboard', category='Keyboard', location='London',
+                       description='Slim Bluetooth keyboard with number pad', quantity_total=20),
+
+            # ── Additional Mice ────────────────────────────────────────── #
+            RentalItem(name='Dell MS900 Premier Rechargeable', category='Mouse', location='London',
+                       description='Dell premium wireless mouse, USB-C rechargeable', quantity_total=20),
+            RentalItem(name='Dell MS5120W Multi-Device', category='Mouse', location='Hove',
+                       description='Dell compact wireless mouse, connects up to 3 devices', quantity_total=20),
+            RentalItem(name='Logitech MX Anywhere 3', category='Mouse', location='Cardiff',
+                       description='Compact wireless mouse, works on any surface', quantity_total=20),
+            RentalItem(name='Microsoft Bluetooth Mouse', category='Mouse', location='London',
+                       description='Slim Bluetooth mouse with scroll wheel', quantity_total=20),
+
+            # ── Additional Webcams ─────────────────────────────────────── #
+            RentalItem(name='Dell Pro 2K QHD Webcam WB3023', category='Webcam', location='London',
+                       description='Dell 2K QHD webcam with AI auto-framing', quantity_total=20),
+            RentalItem(name='Dell UltraSharp 4K Webcam WB7022', category='Webcam', location='Hove',
+                       description='Dell 4K Sony STARVIS sensor, AI auto-framing', quantity_total=20),
+            RentalItem(name='Poly Studio P5', category='Webcam', location='Cardiff',
+                       description='Professional 1080p webcam with Poly Lens software', quantity_total=20),
+            RentalItem(name='Elgato Facecam Pro', category='Webcam', location='London',
+                       description='4K60 full-frame webcam, fixed focus', quantity_total=20),
+
+            # ── Additional Laptops ─────────────────────────────────────── #
+            RentalItem(name='Dell Latitude 7440', category='Laptop', location='London',
+                       description='Dell business laptop, Intel Core i7, 16GB RAM', quantity_total=20),
+            RentalItem(name='Dell XPS 15 (Rental)', category='Laptop', location='Hove',
+                       description='Dell XPS 15, Intel Core i9, OLED display', quantity_total=20),
+            RentalItem(name='Dell Inspiron 14 2-in-1', category='Laptop', location='Cardiff',
+                       description='Dell convertible laptop, AMD Ryzen 7, touchscreen', quantity_total=20),
+            RentalItem(name='Asus ZenBook 14', category='Laptop', location='London',
+                       description='Ultra-slim laptop, Intel Core i5, 14" OLED', quantity_total=20),
+
+            # ── Additional Tablets ─────────────────────────────────────── #
+            RentalItem(name='Samsung Galaxy Tab S9 Ultra', category='Tablet', location='London',
+                       description='14.6" flagship Android tablet, S Pen included', quantity_total=20),
+            RentalItem(name='Microsoft Surface Go 3', category='Tablet', location='Hove',
+                       description='Compact Windows 2-in-1, 10.5", Intel Pentium', quantity_total=20),
+            RentalItem(name='iPad mini (6th Gen)', category='Tablet', location='Cardiff',
+                       description='Compact Apple tablet, 8.3", USB-C', quantity_total=20),
+            RentalItem(name='Lenovo Tab M10 Plus', category='Tablet', location='London',
+                       description='10.6" Android tablet, 4GB RAM, 128GB', quantity_total=20),
+
+            # ── Additional Phones ──────────────────────────────────────── #
+            RentalItem(name='Samsung Galaxy S24 Ultra', category='Phone', location='London',
+                       description='Samsung flagship with S Pen, unlocked', quantity_total=20),
+            RentalItem(name='Google Pixel 8 Pro', category='Phone', location='Hove',
+                       description='Google flagship Android phone, unlocked', quantity_total=20),
+            RentalItem(name='OnePlus 12', category='Phone', location='Cardiff',
+                       description='Flagship Android, 5G, unlocked', quantity_total=20),
+            RentalItem(name='iPhone 15', category='Phone', location='London',
+                       description='Apple iPhone 15, USB-C, unlocked', quantity_total=20),
+
+            # ── Additional Cables / Adapters ───────────────────────────── #
+            RentalItem(name='Dell DA300 Mobile Adapter', category='Cable / Adapter', location='London',
+                       description='Dell 6-in-1 USB-C adapter: HDMI, VGA, DP, USB-A, RJ45, USB-C', quantity_total=20),
+            RentalItem(name='Dell WD22TB4 Thunderbolt Dock', category='Cable / Adapter', location='Hove',
+                       description='Dell 21-in-1 Thunderbolt 4 dock, dual 4K, 130W PD', quantity_total=20),
+            RentalItem(name='USB-A to USB-C Cable (1m)', category='Cable / Adapter', location='Cardiff',
+                       description='Fast-charge USB-A to USB-C cable, 60W', quantity_total=20),
+            RentalItem(name='VGA to HDMI Adapter', category='Cable / Adapter', location='London',
+                       description='For connecting to older projectors with VGA input', quantity_total=20),
         ]
         db.session.add_all(rental_items)
         db.session.flush()
