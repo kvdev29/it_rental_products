@@ -591,16 +591,102 @@ def seed_database():
         db.session.add_all(rental_items)
         db.session.flush()
 
-        # Sample active rental (alice has a headset)
-        sample_rental = Rental(
-            item_id=rental_items[0].id,
+        # ── Varied availability — realistic active/overdue rentals ──────── #
+        print('📊 Seeding realistic availability...')
+        import random
+        random.seed(42)
+
+        staff = [alice, bob, carol, admin]
+
+        def active_rentals(item, count):
+            return [Rental(
+                item_id=item.id,
+                user_id=staff[i % len(staff)].id,
+                rented_at=datetime.utcnow() - timedelta(hours=random.randint(1, 72)),
+                return_by=date.today() + timedelta(days=random.randint(1, 3)),
+                status='Active',
+            ) for i in range(min(count, item.quantity_total))]
+
+        def overdue_rentals(item, count):
+            return [Rental(
+                item_id=item.id,
+                user_id=staff[i % len(staff)].id,
+                rented_at=datetime.utcnow() - timedelta(days=random.randint(5, 14)),
+                return_by=date.today() - timedelta(days=random.randint(1, 6)),
+                status='Overdue',
+            ) for i in range(min(count, item.quantity_total))]
+
+        imap = {r.name: r for r in rental_items}
+        extra = []
+
+        # Laptops — highest demand, most frequently checked out
+        extra += active_rentals(imap['MacBook Air M2 13"'],           14)
+        extra += active_rentals(imap['Dell XPS 13 (Rental)'],          8)
+        extra += active_rentals(imap['Lenovo ThinkPad X1 Carbon'],     6)
+        extra += active_rentals(imap['Dell Latitude 7440'],            11)
+        extra += overdue_rentals(imap['Dell XPS 15 (Rental)'],        20)  # fully out
+        extra += active_rentals(imap['HP EliteBook 840 G10'],           9)
+        extra += active_rentals(imap['Microsoft Surface Laptop 5'],   13)
+        extra += active_rentals(imap['MacBook Pro 14" M3'],             7)
+        extra += active_rentals(imap['Lenovo IdeaPad Flex 5'],          4)
+        extra += active_rentals(imap['Asus ZenBook 14'],               16)
+        extra += active_rentals(imap['Dell Inspiron 14 2-in-1'],        5)
+
+        # Phones — high turnover
+        extra += active_rentals(imap['iPhone 15 Pro'],                 17)
+        extra += active_rentals(imap['Samsung Galaxy S24'],            20)  # fully out
+        extra += active_rentals(imap['Google Pixel 8'],                 8)
+        extra += active_rentals(imap['iPhone 14'],                     11)
+        extra += active_rentals(imap['Samsung Galaxy A54'],             6)
+        extra += active_rentals(imap['iPhone 15'],                     14)
+        extra += active_rentals(imap['Samsung Galaxy S24 Ultra'],      19)
+        extra += active_rentals(imap['Google Pixel 8 Pro'],             9)
+
+        # Tablets — moderate demand
+        extra += active_rentals(imap['iPad Air (M2)'],                 10)
+        extra += active_rentals(imap['iPad Pro 11" (M4)'],             15)
+        extra += active_rentals(imap['Microsoft Surface Pro 9'],       12)
+        extra += active_rentals(imap['Samsung Galaxy Tab S9 Ultra'],    8)
+        extra += active_rentals(imap['Microsoft Surface Go 3'],         5)
+        extra += active_rentals(imap['iPad mini (6th Gen)'],            7)
+
+        # Webcams — meeting-heavy demand
+        extra += active_rentals(imap['Logitech C930e'],                 6)
+        extra += active_rentals(imap['Dell UltraSharp 4K Webcam WB7022'], 10)
+        extra += active_rentals(imap['Dell Pro 2K QHD Webcam WB3023'],  8)
+        extra += active_rentals(imap['Razer Kiyo Pro'],                  4)
+        extra += active_rentals(imap['Elgato Facecam Pro'],             13)
+
+        # Headsets — lower turnover
+        extra += active_rentals(imap['Sony WH-1000XM5'],                7)
+        extra += active_rentals(imap['Jabra Evolve2 85'],               5)
+        extra += active_rentals(imap['Jabra Evolve2 55'],               9)
+        extra += active_rentals(imap['Dell Pro Stereo Headset UC350'],  3)
+
+        # Cables / adapters — short loans, frequently out
+        extra += active_rentals(imap['USB-C Hub 7-in-1'],              12)
+        extra += active_rentals(imap['Dell DA300 Mobile Adapter'],      15)
+        extra += active_rentals(imap['Dell WD22TB4 Thunderbolt Dock'], 18)
+        extra += active_rentals(imap['Thunderbolt 4 Dock'],            14)
+        extra += active_rentals(imap['HDMI to DisplayPort Adapter'],    6)
+
+        # Keyboards / mice — low demand
+        extra += active_rentals(imap['Dell KB900 Premier Collaboration'], 4)
+        extra += active_rentals(imap['Logitech MX Keys'],               3)
+        extra += active_rentals(imap['Dell MS900 Premier Rechargeable'], 5)
+        extra += active_rentals(imap['Logitech MX Master 3S'],          4)
+
+        # Alice's named rental (shown on her dashboard)
+        extra.append(Rental(
+            item_id=imap['Sony WH-1000XM5'].id,
             user_id=alice.id,
             return_by=date.today() + timedelta(days=1),
             notes='For the monthly Finance review meeting',
             status='Active',
             rented_at=datetime.utcnow() - timedelta(hours=3),
-        )
-        db.session.add(sample_rental)
+        ))
+
+        db.session.add_all(extra)
 
         db.session.commit()
 

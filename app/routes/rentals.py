@@ -41,11 +41,13 @@ def catalog():
     """Browse devices available for rental, optionally filtered by location."""
     _sync_overdue()
     from app.models import RentalItem as RI
-    location = request.args.get('location', '')
-    query = RentalItem.query.filter_by(is_active=True)
-    if location in RI.LOCATION_CHOICES:
-        query = query.filter_by(location=location)
-    items = query.order_by(RentalItem.location, RentalItem.category, RentalItem.name).all()
+    location = request.args.get('location', RI.LOCATION_CHOICES[0])
+    if location not in RI.LOCATION_CHOICES:
+        location = RI.LOCATION_CHOICES[0]
+    items = (RentalItem.query
+             .filter_by(is_active=True, location=location)
+             .order_by(RentalItem.category, RentalItem.name)
+             .all())
     return render_template('rentals/catalog.html', items=items,
                            locations=RI.LOCATION_CHOICES, active_location=location)
 

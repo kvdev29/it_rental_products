@@ -15,13 +15,10 @@
 
 {# ── Location Tabs ── #}
 <div class="location-tabs">
-    <a href="{{ url_for('rentals.catalog') }}"
-       class="location-tab {% if not active_location %}location-tab-active{% endif %}">
-        All Offices
-    </a>
     {% for loc in locations %}
     <a href="{{ url_for('rentals.catalog', location=loc) }}"
        class="location-tab {% if active_location == loc %}location-tab-active{% endif %}">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
         {{ loc }}
     </a>
     {% endfor %}
@@ -29,21 +26,9 @@
 
 {% if items %}
 
-{# Group by location then category #}
-{% set grouped_locations = items | map(attribute='location') | unique | list %}
-{% for loc in grouped_locations %}
-{% set loc_items = items | selectattr('location', 'equalto', loc) | list %}
-
-{% if not active_location %}
-<div class="location-section-header">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-    {{ loc }}
-</div>
-{% endif %}
-
-{% set categories = loc_items | map(attribute='category') | unique | list %}
+{% set categories = items | map(attribute='category') | unique | list %}
 {% for cat in categories %}
-{% set cat_items = loc_items | selectattr('category', 'equalto', cat) | list %}
+{% set cat_items = items | selectattr('category', 'equalto', cat) | list %}
 
 <h2 class="catalog-category-heading">{{ cat }}</h2>
 <div class="rental-catalog-grid">
@@ -67,16 +52,23 @@
             {% endif %}
             <div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;margin-top:.4rem;">
                 {% if item.is_available %}
-                <span class="badge" style="background:var(--success-lt);color:var(--success);">
+                {% set pct = (item.quantity_available / item.quantity_total * 100) | int %}
+                {% if pct <= 25 %}
+                <span class="badge" style="background:var(--danger-lt,#fde8e8);color:var(--danger);">
+                    {{ item.quantity_available }} of {{ item.quantity_total }} available
+                </span>
+                {% elif pct <= 60 %}
+                <span class="badge" style="background:var(--warning-lt,#fff3cd);color:var(--warning);">
                     {{ item.quantity_available }} of {{ item.quantity_total }} available
                 </span>
                 {% else %}
+                <span class="badge" style="background:var(--success-lt);color:var(--success);">
+                    {{ item.quantity_available }} of {{ item.quantity_total }} available
+                </span>
+                {% endif %}
+                {% else %}
                 <span class="badge badge-decommissioned">All checked out</span>
                 {% endif %}
-                <span class="location-badge">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                    {{ item.location }}
-                </span>
             </div>
         </div>
         <div class="rental-card-action">
@@ -92,13 +84,12 @@
     {% endfor %}
 </div>
 {% endfor %}
-{% endfor %}
 
 {% else %}
 <div class="empty-state" style="margin-top:4rem;">
     <div class="empty-icon">📦</div>
-    <h3>No devices available</h3>
-    <p>{% if active_location %}No items at {{ active_location }} right now.{% else %}The rental catalog is empty.{% endif %}</p>
+    <h3>No devices at {{ active_location }}</h3>
+    <p>No items are currently listed for this office.</p>
 </div>
 {% endif %}
 
