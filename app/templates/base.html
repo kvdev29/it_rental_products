@@ -139,7 +139,8 @@
 </nav>
 {% endif %}
 
-{# ── Flash Messages ── #}
+{# ── Flash Messages (standard pages) ── #}
+{% block flash %}
 <div class="flash-container">
 {% with messages = get_flashed_messages(with_categories=true) %}
     {% for category, message in messages %}
@@ -153,8 +154,9 @@
     {% endfor %}
 {% endwith %}
 </div>
+{% endblock %}
 
-<main class="main-content">
+<main class="{% block main_class %}main-content{% endblock %}">
     {% block content %}{% endblock %}
 </main>
 
