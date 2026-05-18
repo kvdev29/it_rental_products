@@ -1,20 +1,4 @@
-"""
-app/routes/auth.py - Authentication Routes
--------------------------------------------
-Handles login, logout, registration, password change and profile management.
-
-OWASP coverage in this module:
-    A07 - Identification & Authentication Failures:
-          - Rate limiting on login endpoint (max 10 attempts / minute)
-          - Account lockout after 5 consecutive failed logins (15-minute lockout)
-          - Secure session management via Flask-Login
-          - Strong password policy enforced via form validators
-    A02 - Cryptographic Failures:
-          - Passwords hashed with PBKDF2-SHA256 via Werkzeug
-          - Plain-text passwords never logged or stored
-    A09 - Security Logging:
-          - All login attempts (success and failure) written to AuditLog
-"""
+# auth routes - login, logout, register, profile, password change
 
 from datetime import datetime
 from flask import (Blueprint, render_template, redirect, url_for,
@@ -30,30 +14,17 @@ from app import limiter
 auth_bp = Blueprint('auth', __name__)
 
 
-# ======================================================================= #
-#  Login                                                                    #
-# ======================================================================= #
-
 @auth_bp.route('/login', methods=['GET', 'POST'])
 @limiter.limit('10 per minute', error_message='Too many login attempts. Please wait.')
 def login():
-    """
-    Authenticate a user and create a session.
-
-    Rate limited to 10 requests/minute per IP to mitigate brute-force
-    attacks (OWASP A07). Account lockout provides a second layer of
-    protection independent of IP-based limiting.
-    """
     if current_user.is_authenticated:
         return redirect(url_for('main.dashboard'))
 
     form = LoginForm()
 
     if form.validate_on_submit():
-        # Look up user - use timing-safe comparison by always checking hash
         user = User.query.filter_by(username=form.username.data).first()
 
-        # ── Account lockout check (OWASP A07) ──────────────────────────
         if user and user.is_locked():
             log_event(
                 event_type=AuditLog.EVENT_LOGIN_FAIL,
@@ -64,7 +35,6 @@ def login():
                   'Please try again in 15 minutes.', 'danger')
             return render_template('auth/login.html', form=form)
 
-        # ── Credential verification ─────────────────────────────────────
         if user is None or not user.check_password(form.password.data):
             if user:
                 user.increment_failed_login()
@@ -88,7 +58,6 @@ def login():
             flash('Invalid username or password.', 'danger')
             return render_template('auth/login.html', form=form)
 
-        # ── Check account is active ─────────────────────────────────────
         if not user.is_active:
             log_event(
                 event_type=AuditLog.EVENT_LOGIN_FAIL,
@@ -98,7 +67,7 @@ def login():
             flash('Your account has been deactivated. Contact an administrator.', 'danger')
             return render_template('auth/login.html', form=form)
 
-        # ── Successful authentication ────────────────────────────────────
+        # successful — reset counter and log in
         user.reset_failed_login()
         user.last_login = datetime.utcnow()
         db.session.commit()
@@ -120,9 +89,6 @@ def login():
     return render_template('auth/login.html', form=form)
 
 
-# ======================================================================= #
-#  Logout                                                                   #
-# ======================================================================= #
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 @limiter.limit('5 per hour')
@@ -173,9 +139,6 @@ def logout():
     return redirect(url_for('auth.login'))
 
 
-# ======================================================================= #
-#  Profile                                                                  #
-# ======================================================================= #
 
 @auth_bp.route('/profile', methods=['GET', 'POST'])
 @login_required
@@ -208,20 +171,11 @@ def profile():
     return render_template('auth/profile.html', form=form)
 
 
-# ======================================================================= #
-#  Change Password                                                          #
-# ======================================================================= #
 
 @auth_bp.route('/change-password', methods=['GET', 'POST'])
 @login_required
 @limiter.limit('5 per hour')
 def change_password():
-    """
-    Allow a user to change their own password.
-
-    Rate limited to 5 attempts/hour to limit brute-force against
-    the current-password check.
-    """
     form = ChangePasswordForm()
 
     if form.validate_on_submit():

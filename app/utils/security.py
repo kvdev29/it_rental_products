@@ -1,18 +1,6 @@
 """
-app/utils/security.py - Security Utilities
--------------------------------------------
-Centralised security helpers used across the application.
-
-OWASP Top 10 coverage:
-    A01 - Broken Access Control    : role_required / admin_required decorators
-    A02 - Cryptographic Failures   : handled in models (Werkzeug hashing)
-    A03 - Injection                : sanitize_input using bleach
-    A05 - Security Misconfiguration: apply_security_headers middleware
-    A07 - Auth Failures            : rate limiting (Flask-Limiter, see __init__.py)
-    A09 - Logging & Monitoring     : log_event audit function
-
-Reference: OWASP Top 10 (2021)
-https://owasp.org/Top10/
+Shared security helpers — access control decorators, input sanitisation,
+HTTP headers, and the audit log writer.
 """
 
 import json
@@ -24,24 +12,10 @@ from flask_login import current_user
 from app.models import db, AuditLog
 
 
-# ======================================================================= #
-#  Access Control Decorators (OWASP A01)                                    #
-# ======================================================================= #
+# access control
 
 def admin_required(f):
-    """
-    Decorator that restricts a route to admin users only.
-
-    If a non-admin authenticated user attempts access, a 403 Forbidden
-    response is returned and the attempt is logged to the audit trail.
-
-    Usage:
-        @app.route('/admin/users')
-        @login_required
-        @admin_required
-        def manage_users():
-            ...
-    """
+    """Restrict route to admin users; logs and 403s everyone else."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated:
@@ -62,19 +36,7 @@ def admin_required(f):
 
 
 def owner_or_admin_required(get_owner_id):
-    """
-    Decorator factory that allows access only to the resource owner or admins.
-
-    Args:
-        get_owner_id: callable that accepts (kwargs) and returns the owner's user_id
-
-    Usage:
-        @ticket_bp.route('/<int:ticket_id>/edit')
-        @login_required
-        @owner_or_admin_required(lambda kw: Ticket.query.get(kw['ticket_id']).raised_by_id)
-        def edit_ticket(ticket_id):
-            ...
-    """
+    """Allow access only to the resource owner or an admin."""
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
@@ -95,27 +57,14 @@ def owner_or_admin_required(get_owner_id):
     return decorator
 
 
-# ======================================================================= #
-#  Input Sanitisation (OWASP A03 - XSS Prevention)                         #
-# ======================================================================= #
+# input sanitisation
 
 # Allowed HTML tags for rich-text fields (ticket descriptions, comments)
 ALLOWED_TAGS = []           # Plaintext only - strip ALL HTML
 ALLOWED_ATTRIBUTES = {}
 
 def sanitize_input(value):
-    """
-    Strip all HTML tags from a string to prevent XSS.
-
-    Uses bleach to clean input before it reaches the database.
-    Jinja2 auto-escaping provides a second layer of protection on output.
-
-    Args:
-        value (str): Raw user input
-
-    Returns:
-        str: Sanitised string with all HTML stripped
-    """
+    """Strip HTML from a string using bleach."""
     if value is None:
         return value
     # bleach.clean strips tags; linkify=False prevents URL conversion
@@ -124,15 +73,7 @@ def sanitize_input(value):
 
 
 def sanitize_form_data(form_data):
-    """
-    Sanitise all string fields in a dictionary (e.g. form.data).
-
-    Args:
-        form_data (dict): WTForms form.data dictionary
-
-    Returns:
-        dict: New dict with all string values sanitised
-    """
+    """Run sanitize_input on every string value in a form.data dict."""
     cleaned = {}
     for key, value in form_data.items():
         if isinstance(value, str):
@@ -142,26 +83,10 @@ def sanitize_form_data(form_data):
     return cleaned
 
 
-# ======================================================================= #
-#  Security Headers (OWASP A05 - Security Misconfiguration)                 #
-# ======================================================================= #
+# HTTP security headers
 
 def apply_security_headers(response):
-    """
-    Add HTTP security headers to every response.
-
-    Headers applied:
-        X-Content-Type-Options     : Prevents MIME sniffing
-        X-Frame-Options            : Prevents clickjacking
-        X-XSS-Protection           : Legacy XSS filter (belt-and-braces)
-        Referrer-Policy            : Limits referrer information leakage
-        Content-Security-Policy    : Restricts resource loading (OWASP A03)
-        Strict-Transport-Security  : Forces HTTPS (production only)
-        Permissions-Policy         : Disables sensitive browser APIs
-
-    Reference: OWASP Secure Headers Project
-    https://owasp.org/www-project-secure-headers/
-    """
+    """Attach security headers to every outgoing response."""
     # Prevent MIME type sniffing
     response.headers['X-Content-Type-Options'] = 'nosniff'
 
@@ -194,26 +119,10 @@ def apply_security_headers(response):
     return response
 
 
-# ======================================================================= #
-#  Audit Logging (OWASP A09 - Security Logging & Monitoring)               #
-# ======================================================================= #
+# audit logging
 
 def log_event(event_type, description, resource_type=None,
               resource_id=None, user_id=None, extra_data=None):
-    """
-    Write an entry to the AuditLog table.
-
-    Called throughout the application to maintain an immutable audit trail.
-    Records: who did what, to which resource, from where, and when.
-
-    Args:
-        event_type   (str): AuditLog.EVENT_* constant
-        description  (str): Human-readable description of the event
-        resource_type(str): Model name affected ('Asset', 'Ticket', etc.)
-        resource_id  (int): Primary key of the affected record
-        user_id      (int): Override user; defaults to current_user.id
-        extra_data   (dict): Additional structured context (stored as JSON)
-    """
     # Determine actor
     if user_id is None:
         try:
@@ -253,13 +162,7 @@ def log_event(event_type, description, resource_type=None,
 
 def log_event_no_commit(event_type, description, resource_type=None,
                          resource_id=None, user_id=None, extra_data=None):
-    """
-    Add an AuditLog entry to the current session without committing.
-
-    Use this when the audit log entry should be committed atomically
-    with another database change (e.g. creating a Ticket and logging it
-    in one transaction).
-    """
+    # same as log_event but doesn't commit — use when bundled with another db write
     if user_id is None:
         try:
             uid = current_user.id if current_user.is_authenticated else None

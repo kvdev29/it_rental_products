@@ -1,19 +1,6 @@
 """
-seed.py - Database Seeder
---------------------------
-Populates the database with realistic sample data for testing and demonstration.
-
-Creates:
-    - 1 admin user
-    - 4 regular users
-    - 12 IT assets across different types
-    - 10 helpdesk tickets in various states
-    - Sample comments on tickets
-
-Usage:
-    flask seed-db
-    or
-    python seed.py
+seed.py  —  drop and repopulate the database with sample data.
+Run with:  python seed.py
 """
 
 from datetime import date, datetime, timedelta
@@ -26,13 +13,13 @@ def seed_database():
     app = create_app('development')
 
     with app.app_context():
-        print('🌱 Dropping existing tables...')
+        print('Dropping tables...')
         db.drop_all()
-        print('🌱 Creating tables...')
         db.create_all()
 
-        # ── Users ────────────────────────────────────────────────────── #
-        print('👤 Creating users...')
+        # TODO: pull initial data from a config file instead of hardcoding
+
+        print('Creating users...')
 
         admin = User(
             username='admin',
@@ -98,8 +85,7 @@ def seed_database():
         db.session.add_all([admin, alice, bob, carol, dave])
         db.session.flush()
 
-        # ── Assets ───────────────────────────────────────────────────── #
-        print('📦 Creating assets...')
+        print('Creating assets...')
 
         assets_data = [
             dict(name='Dell XPS 15 Laptop', asset_tag='LT-001', asset_type='Laptop',
@@ -199,8 +185,7 @@ def seed_database():
 
         db.session.flush()
 
-        # ── Tickets ──────────────────────────────────────────────────── #
-        print('🎫 Creating tickets...')
+        print('Creating tickets...')
 
         tickets_data = [
             dict(title='Laptop running very slowly since Windows update',
@@ -308,8 +293,7 @@ def seed_database():
 
         db.session.flush()
 
-        # ── Comments ─────────────────────────────────────────────────── #
-        print('💬 Creating comments...')
+        print('Creating comments...')
 
         comments = [
             Comment(ticket_id=ticket_objects[0].id, author_id=admin.id,
@@ -352,8 +336,7 @@ def seed_database():
 
         db.session.add_all(comments)
 
-        # ── Audit log seed entries ────────────────────────────────────── #
-        print('📋 Seeding audit log...')
+        print('Seeding audit log...')
 
         audit_entries = [
             AuditLog(user_id=admin.id, event_type=AuditLog.EVENT_LOGIN_SUCCESS,
@@ -376,8 +359,7 @@ def seed_database():
         ]
         db.session.add_all(audit_entries)
 
-        # ── Rental Catalog ────────────────────────────────────────────── #
-        print('🎧 Creating rental catalog...')
+        print('Creating rental catalog...')
 
         rental_items = [
             # ── Headsets ──────────────────────────────────────────────── #
@@ -690,8 +672,8 @@ def seed_database():
 
         db.session.commit()
 
-        print('\n✅ Database seeded successfully!')
-        print('\n📋 Test Credentials:')
+        print('\nDone.')
+        print('\nTest accounts:')
         print('   Admin  : admin / Admin@12345')
         print('   User 1 : alice.jones / Alice@12345')
         print('   User 2 : bob.smith / Bob@123456')

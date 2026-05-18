@@ -32,19 +32,17 @@ def dashboard():
     """
     if current_user.is_admin:
         stats = {
-            'total_assets':      Asset.query.count(),
-            'assets_in_use':     Asset.query.filter_by(status='In Use').count(),
-            'assets_available':  Asset.query.filter_by(status='Available').count(),
-            'total_tickets':     Ticket.query.count(),
-            'open_tickets':      Ticket.query.filter_by(status='Open').count(),
-            'in_progress':       Ticket.query.filter_by(status='In Progress').count(),
-            'critical_tickets':  Ticket.query.filter_by(
-                                    status='Open', priority='Critical').count(),
-            'total_users':       User.query.count(),
-            'active_users':      User.query.filter_by(is_active=True).count(),
-            'active_rentals':    Rental.query.filter(
-                                    Rental.status.in_(['Active', 'Overdue'])).count(),
-            'overdue_rentals':   Rental.query.filter_by(status='Overdue').count(),
+            'total_assets': Asset.query.count(),
+            'assets_in_use': Asset.query.filter_by(status='In Use').count(),
+            'assets_available': Asset.query.filter_by(status='Available').count(),
+            'total_tickets': Ticket.query.count(),
+            'open_tickets': Ticket.query.filter_by(status='Open').count(),
+            'in_progress': Ticket.query.filter_by(status='In Progress').count(),
+            'critical_tickets': Ticket.query.filter_by(status='Open', priority='Critical').count(),
+            'total_users': User.query.count(),
+            'active_users': User.query.filter_by(is_active=True).count(),
+            'active_rentals': Rental.query.filter(Rental.status.in_(['Active', 'Overdue'])).count(),
+            'overdue_rentals': Rental.query.filter_by(status='Overdue').count(),
         }
         recent_tickets = (Ticket.query
                           .order_by(Ticket.created_at.desc())
@@ -74,8 +72,8 @@ def dashboard():
                           .all())
         stats = {
             'my_active_rentals': len(active_rentals),
-            'my_overdue':        sum(1 for r in active_rentals if r.status == 'Overdue'),
-            'my_total_rentals':  Rental.query.filter_by(user_id=current_user.id).count(),
+            'my_overdue': sum(1 for r in active_rentals if r.status == 'Overdue'),
+            'my_total_rentals': Rental.query.filter_by(user_id=current_user.id).count(),
         }
         return render_template('main/dashboard_user.html',
                                stats=stats,

@@ -1,10 +1,4 @@
-"""
-app/routes/rentals.py - Device Rental Routes
----------------------------------------------
-Allows users to browse the rental catalog and borrow office devices
-(headsets, keyboards, etc.) for the day. Rentals are auto-approved
-when stock is available.
-"""
+# Rental routes — catalog, checkout, return, admin management
 
 from datetime import date, datetime
 
@@ -31,9 +25,7 @@ def _sync_overdue():
         db.session.commit()
 
 
-# ======================================================================= #
-#  User-facing routes                                                       #
-# ======================================================================= #
+# user routes
 
 @rentals_bp.route('/')
 @login_required
@@ -145,9 +137,7 @@ def return_rental(rental_id):
     return redirect(url_for('rentals.my_rentals'))
 
 
-# ======================================================================= #
-#  Admin routes                                                             #
-# ======================================================================= #
+# admin routes
 
 @rentals_bp.route('/admin')
 @login_required

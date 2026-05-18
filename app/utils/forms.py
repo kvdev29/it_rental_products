@@ -1,17 +1,6 @@
 """
-app/utils/forms.py - WTForms Form Definitions
------------------------------------------------
-All WTForms classes used in the application.
-
-Security:
-    - Every form inherits from FlaskForm which automatically includes
-      a CSRF token field (OWASP A01 - Cross-Site Request Forgery)
-    - Server-side validation is enforced independently of client-side
-      checks (OWASP A03 - Injection prevention)
-    - Password strength is validated server-side
-
-Reference: WTForms documentation
-https://wtforms.readthedocs.io/en/3.1.x/
+WTForms form definitions. All forms use FlaskForm so CSRF tokens
+are included automatically.
 """
 
 import re
@@ -27,21 +16,10 @@ from wtforms.validators import (
 from app.models import User
 
 
-# ======================================================================= #
-#  Custom Validators                                                        #
-# ======================================================================= #
+# custom validators
 
 def password_strength(form, field):
-    """
-    Enforce a strong password policy (OWASP A07).
-
-    Requirements:
-        - Minimum 8 characters
-        - At least one uppercase letter
-        - At least one lowercase letter
-        - At least one digit
-        - At least one special character
-    """
+    """Require min 8 chars with upper, lower, digit and special char."""
     password = field.data
     errors = []
     if len(password) < 8:
@@ -59,22 +37,14 @@ def password_strength(form, field):
 
 
 def no_html(form, field):
-    """
-    Reject input that contains HTML tags.
-
-    Bleach sanitisation is applied on save, but we also reject blatant
-    HTML injection attempts at the validation stage and log the attempt.
-    """
+    """Reject any input that contains HTML tags."""
     if field.data and re.search(r'<[^>]+>', field.data):
         raise ValidationError('HTML tags are not permitted in this field.')
 
 
-# ======================================================================= #
-#  Authentication Forms                                                     #
-# ======================================================================= #
+# auth forms
 
 class LoginForm(FlaskForm):
-    """Login form with CSRF protection."""
     username = StringField('Username', validators=[
         DataRequired(message='Username is required.'),
         Length(min=3, max=64),
@@ -86,7 +56,7 @@ class LoginForm(FlaskForm):
 
 
 class RegistrationForm(FlaskForm):
-    """New user registration - admin use only."""
+    """Admin-only user creation form."""
     username = StringField('Username', validators=[
         DataRequired(),
         Length(min=3, max=64),
@@ -201,12 +171,9 @@ class EditProfileForm(FlaskForm):
     submit = SubmitField('Save Changes')
 
 
-# ======================================================================= #
-#  Asset Forms                                                              #
-# ======================================================================= #
+# asset forms
 
 class AssetForm(FlaskForm):
-    """Create / edit an IT asset."""
     name = StringField('Asset Name', validators=[
         DataRequired(), Length(min=2, max=120), no_html,
     ])
@@ -238,7 +205,6 @@ class AssetForm(FlaskForm):
     submit = SubmitField('Save Asset')
 
     def __init__(self, *args, **kwargs):
-        """Populate dynamic choices."""
         from app.models import Asset
         super().__init__(*args, **kwargs)
         self.asset_type.choices = [(t, t) for t in Asset.TYPE_CHOICES]
@@ -250,9 +216,7 @@ class AssetForm(FlaskForm):
                                        [(u.id, u.full_name) for u in users]
 
 
-# ======================================================================= #
-#  Ticket Forms                                                             #
-# ======================================================================= #
+# ticket forms
 
 class TicketForm(FlaskForm):
     """Raise a new helpdesk ticket."""
@@ -304,9 +268,7 @@ class CommentForm(FlaskForm):
     submit = SubmitField('Post Comment')
 
 
-# ======================================================================= #
-#  Admin User Management Forms                                              #
-# ======================================================================= #
+# admin forms
 
 class AdminEditUserForm(FlaskForm):
     """Admin edit of any user account."""
@@ -340,9 +302,7 @@ class SearchForm(FlaskForm):
     submit = SubmitField('Search')
 
 
-# ======================================================================= #
-#  Rental Forms                                                             #
-# ======================================================================= #
+# rental forms
 
 class RentalRequestForm(FlaskForm):
     """Request to rent a device for the day."""

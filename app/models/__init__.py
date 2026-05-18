@@ -1,23 +1,5 @@
-"""
-app/models/__init__.py - Database Models
------------------------------------------
-Defines all SQLAlchemy ORM models for the ITSM application.
-
-Tables:
-    User        - Application users (admins and regular users)
-    Asset       - IT assets (hardware, software, licences)
-    Ticket      - Helpdesk support tickets
-    AuditLog    - Immutable audit trail of all data changes
-    Comment     - Ticket comments/updates
-
-Security considerations:
-    - Passwords are never stored in plaintext (Werkzeug PBKDF2-SHA256)
-    - Audit logging provides non-repudiation (OWASP A09)
-    - Relationships use FK constraints to maintain referential integrity
-
-Reference: SQLAlchemy ORM documentation
-https://docs.sqlalchemy.org/en/20/orm/
-"""
+# Database models for GearDesk
+# SQLAlchemy ORM — all tables defined here
 
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
@@ -27,23 +9,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 db = SQLAlchemy()
 
 
-# ======================================================================= #
-#  User Model                                                               #
-# ======================================================================= #
+# --- User ---
 
 class User(UserMixin, db.Model):
-    """
-    Represents an application user.
-
-    Roles:
-        admin  - Full CRUD access, user management, audit log access
-        user   - Can raise/view own tickets, view assigned assets
-
-    Security:
-        - Password stored as PBKDF2-SHA256 hash (Werkzeug default)
-        - is_active flag allows account deactivation without deletion
-        - failed_login_count supports account lockout (OWASP A07)
-    """
+    """App user. role is 'admin', 'user' or 'guest'."""
     __tablename__ = 'users'
 
     id                 = db.Column(db.Integer, primary_key=True)
@@ -122,17 +91,10 @@ class User(UserMixin, db.Model):
         return f'<User {self.username} ({self.role})>'
 
 
-# ======================================================================= #
-#  Asset Model                                                              #
-# ======================================================================= #
+# --- Asset ---
 
 class Asset(db.Model):
-    """
-    Represents an IT asset (hardware, software licence, peripheral, etc.).
-
-    The assigned_to FK links to the User who currently holds the asset.
-    NULL assigned_to means the asset is available/in-stock.
-    """
+    """IT asset — laptop, licence, peripheral, etc."""
     __tablename__ = 'assets'
 
     # Status choices - validated at form level
@@ -167,20 +129,10 @@ class Asset(db.Model):
         return f'<Asset {self.asset_tag}: {self.name}>'
 
 
-# ======================================================================= #
-#  Ticket Model                                                             #
-# ======================================================================= #
+# --- Ticket ---
 
 class Ticket(db.Model):
-    """
-    Represents a helpdesk support ticket.
-
-    Workflow:
-        Open -> In Progress -> Resolved -> Closed
-        Any status -> Cancelled (admin only)
-
-    Priority levels affect SLA targets (display only in this implementation).
-    """
+    """Helpdesk support ticket. Open → In Progress → Resolved → Closed."""
     __tablename__ = 'tickets'
 
     STATUS_CHOICES   = ['Open', 'In Progress', 'Resolved', 'Closed', 'Cancelled']
@@ -211,15 +163,10 @@ class Ticket(db.Model):
         return f'<Ticket #{self.id}: {self.title[:40]}>'
 
 
-# ======================================================================= #
-#  Comment Model                                                            #
-# ======================================================================= #
+# --- Comment ---
 
 class Comment(db.Model):
-    """
-    A comment or update on a helpdesk ticket.
-    Supports internal (admin-only) notes and public updates.
-    """
+    """Comment on a ticket. is_internal=True means admin-only."""
     __tablename__ = 'comments'
 
     id         = db.Column(db.Integer, primary_key=True)
@@ -233,23 +180,10 @@ class Comment(db.Model):
         return f'<Comment by user {self.author_id} on ticket {self.ticket_id}>'
 
 
-# ======================================================================= #
-#  AuditLog Model (OWASP A09 - Security Logging & Monitoring)              #
-# ======================================================================= #
+# --- AuditLog (insert-only, never updated or deleted) ---
 
 class AuditLog(db.Model):
-    """
-    Immutable audit trail recording all significant application events.
-
-    This satisfies OWASP A09 (Security Logging and Monitoring Failures)
-    by ensuring that:
-      - Authentication events are logged
-      - Data modifications are logged with before/after values
-      - Admin actions are logged with actor identity
-      - Security events (lockout, access denied) are logged
-
-    Note: Records are INSERT-only; no UPDATE or DELETE is performed on this table.
-    """
+    """Audit trail. Records are insert-only — nothing is ever updated or deleted."""
     __tablename__ = 'audit_logs'
 
     # Event type constants for consistency
@@ -281,9 +215,7 @@ class AuditLog(db.Model):
         return f'<AuditLog {self.event_type} by user {self.user_id} at {self.timestamp}>'
 
 
-# ======================================================================= #
-#  RentalItem Model                                                         #
-# ======================================================================= #
+# --- RentalItem / Rental ---
 
 class RentalItem(db.Model):
     """A device available for short-term rental within the office."""
